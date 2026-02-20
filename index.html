@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AI Audio Transcriber</title>
+</head>
+
+<body>
+<h2>Upload Audio File</h2>
+
+<input type="file" id="audioFile"/>
+<button onclick="upload()">Transcribe</button>
+
+<p id="result"></p>
+
+<script>
+async function upload() {
+
+const file = document.getElementById('audioFile').files[0];
+
+const formData = new FormData();
+formData.append("file", file);
+formData.append("model","whisper-1");
+
+const response = await fetch("/api/transcribe",{
+method:"POST",
+body:formData
+});
+
+const data = await response.json();
+
+document.getElementById('result').innerText = data.text;
+}
+</script>
+
+</body>
+</html>
