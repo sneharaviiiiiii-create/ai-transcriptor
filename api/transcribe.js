@@ -4,28 +4,38 @@ export const config = {
   },
 };
 
-import OpenAI from "openai";
-import formidable from "formidable";
-import fs from "fs";
+const OpenAI = require("openai");
+const formidable = require("formidable");
+const fs = require("fs");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
 
   const form = new formidable.IncomingForm();
 
   form.parse(req, async (err, fields, files) => {
 
-    const file = fs.createReadStream(files.file[0].filepath);
+    if (err) {
+      return res.status(500).json({ error: "File upload error" });
+    }
 
-    const transcription = await openai.audio.transcriptions.create({
-      file: file,
-      model: "whisper-1",
-    });
+    try {
+      const file = fs.createReadStream(files.file[0].filepath);
 
-    res.status(200).json({ text: transcription.text });
+      const transcription = await openai.audio.transcriptions.create({
+        file: file,
+        model: "whisper-1",
+      });
+
+      res.status(200).json({ text: transcription.text });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Transcription failed" });
+    }
 
   });
-}
+};
